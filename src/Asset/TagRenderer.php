@@ -27,6 +27,7 @@ class TagRenderer implements ResetInterface
     private $eventDispatcher;
 
     private $renderedFiles = [];
+    private $renderedFilesWithAttributes = [];
 
     public function __construct(
         EntrypointLookupCollectionInterface $entrypointLookupCollection,
@@ -46,7 +47,7 @@ class TagRenderer implements ResetInterface
         $this->reset();
     }
 
-    public function renderWebpackScriptTags(string $entryName, string $packageName = null, string $entrypointName = null, array $extraAttributes = []): string
+    public function renderWebpackScriptTags(string $entryName, string $packageName = null, string $entrypointName = null, array $extraAttributes = [], bool $includeAttributes = false): string
     {
         $entrypointName = $entrypointName ?: '_default';
         $scriptTags = [];
@@ -78,12 +79,13 @@ class TagRenderer implements ResetInterface
             );
 
             $this->renderedFiles['scripts'][] = $attributes['src'];
+            $this->renderedFilesWithAttributes['scripts'][] = $attributes;
         }
 
         return implode('', $scriptTags);
     }
 
-    public function renderWebpackLinkTags(string $entryName, string $packageName = null, string $entrypointName = null, array $extraAttributes = []): string
+    public function renderWebpackLinkTags(string $entryName, string $packageName = null, string $entrypointName = null, array $extraAttributes = [], bool $includeAttributes = false): string
     {
         $entrypointName = $entrypointName ?: '_default';
         $scriptTags = [];
@@ -116,6 +118,7 @@ class TagRenderer implements ResetInterface
             );
 
             $this->renderedFiles['styles'][] = $attributes['href'];
+            $this->renderedFilesWithAttributes['styles'][] = $attributes;
         }
 
         return implode('', $scriptTags);
@@ -131,6 +134,16 @@ class TagRenderer implements ResetInterface
         return $this->renderedFiles['styles'];
     }
 
+    public function getRenderedScriptsWithAttributes(): array
+    {
+        return $this->renderedFilesWithAttributes['scripts'];
+    }
+
+    public function getRenderedStylesWithAttributes(): array
+    {
+        return $this->renderedFilesWithAttributes['styles'];
+    }
+
     public function getDefaultAttributes(): array
     {
         return $this->defaultAttributes;
@@ -138,7 +151,7 @@ class TagRenderer implements ResetInterface
 
     public function reset(): void
     {
-        $this->renderedFiles = [
+        $this->renderedFiles = $this->renderedFilesWithAttributes = [
             'scripts' => [],
             'styles' => [],
         ];
